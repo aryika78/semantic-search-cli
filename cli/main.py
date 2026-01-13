@@ -4,6 +4,7 @@ from rich.table import Table
 
 from semantic_search.search import semantic_search
 from semantic_search.compare import TextComparator
+from semantic_search.index import VectorIndex
 
 console = Console()
 
@@ -50,23 +51,106 @@ def run_search(args):
     console.print(table)
 
 
+def run_index_build(args):
+    with open(args.corpus_file, "r", encoding="utf-8") as f:
+        documents = [line.strip() for line in f if line.strip()]
+
+    index = VectorIndex()
+    index.build(documents)
+    index.save(args.output)
+
+    console.print(f"✅ Index built and saved to [green]{args.output}[/green]")
+
+
+def run_index_search(args):
+    index = VectorIndex()
+    index.load(args.index)
+
+    results = index.search(
+        query=args.query,
+        top_k=args.top_k,
+        metric=args.metric,
+    )
+
+    table = Table(title="🔎 Indexed Search Results")
+    table.add_column("Rank", style="cyan")
+    table.add_column("Document")
+    table.add_column("Score", style="green")
+
+    for i, (doc, score) in enumerate(results, start=1):
+        table.add_row(str(i), doc, f"{score:.4f}")
+
+    console.print(table)
+def run_embed(args):
+    from semantic_search.embeddings import EmbeddingGenerator
+    import numpy as np
+
+    embedder = EmbeddingGenerator()
+
+    if args.file:
+        try:
+            with open(args.file, "r", encoding="utf-8") as f:
+                texts = [line.strip() for line in f if line.strip()]
+        except FileNotFoundError:
+            console.print(f"[red]File not found:[/red] {args.file}")
+            return
+
+        embeddings = embedder.embed_batch(texts)
+
+        console.print("[green]Batch embeddings generated[/green]")
+        console.print(f"• Number of texts: {len(texts)}")
+        console.print(f"• Embedding shape: {embeddings.shape}")
+
+    else:
+        embedding = embedder.embed_single(args.text)
+
+        console.print("[green]Embedding generated successfully[/green]")
+        console.print(f"• Dimensions: {embedding.shape[0]}")
+        console.print(f"• First 10 values: {embedding[:10]}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # compare command
+    # compare
     compare_parser = subparsers.add_parser("compare", help="Compare two texts")
-    compare_parser.add_argument("text1", type=str)
-    compare_parser.add_argument("text2", type=str)
+    compare_parser.add_argument("text1")
+    compare_parser.add_argument("text2")
     compare_parser.set_defaults(func=run_compare)
 
-    # search command
+    # search (non-indexed)
     search_parser = subparsers.add_parser("search", help="Semantic search over corpus")
-    search_parser.add_argument("query", type=str)
-    search_parser.add_argument("corpus_file", type=str)
+    search_parser.add_argument("query")
+    search_parser.add_argument("corpus_file")
     search_parser.add_argument("--top_k", type=int, default=5)
-    search_parser.add_argument("--metric", type=str, default="cosine")
+    search_parser.add_argument("--metric", default="cosine")
     search_parser.set_defaults(func=run_search)
+
+    # index
+    index_parser = subparsers.add_parser("index", help="Vector index operations")
+    index_sub = index_parser.add_subparsers(dest="index_command", required=True)
+
+    # index build
+    build_parser = index_sub.add_parser("build", help="Build vector index")
+    build_parser.add_argument("corpus_file")
+    build_parser.add_argument("--output", default="index.npz")
+    build_parser.set_defaults(func=run_index_build)
+
+    # index search
+    index_search_parser = index_sub.add_parser("search", help="Search vector index")
+    index_search_parser.add_argument("query")
+    index_search_parser.add_argument("--index", default="index.npz")
+    index_search_parser.add_argument("--top_k", type=int, default=5)
+    index_search_parser.add_argument("--metric", default="cosine")
+    index_search_parser.set_defaults(func=run_index_search)
+
+    # embed command
+    embed_parser = subparsers.add_parser("embed", help="Generate text embeddings")
+    embed_parser.add_argument("text", nargs="?", help="Input text")
+    embed_parser.add_argument("--file", type=str, help="File with one text per line")
+    embed_parser.set_defaults(func=run_embed)
+
 
     args = parser.parse_args()
     args.func(args)

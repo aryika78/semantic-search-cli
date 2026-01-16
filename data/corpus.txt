@@ -1,1 +1,11 @@
 Machine learning enables systems to learn patterns from data.
+Deep learning is a subset of machine learning that uses neural networks.
+Natural language processing helps computers understand human language.
+Semantic search focuses on meaning rather than exact keyword matches.
+Traditional keyword search relies on exact word matching.
+Docker helps package applications with all their dependencies.
+Containers ensure software runs consistently across environments.
+Python is widely used for data science and machine learning.
+Vector embeddings represent text as numerical values.
+Cosine similarity measures the similarity between two vectors.
+

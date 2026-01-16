@@ -34,7 +34,7 @@ def run_search(args):
     except FileNotFoundError:
         console.print(f"[red]File not found:[/red] {args.corpus_file}")
         return
-    
+
     start = time.perf_counter()
 
     results = semantic_search(
@@ -111,12 +111,20 @@ def run_index_search(args):
 
 def run_embed(args):
     from semantic_search.embeddings import EmbeddingGenerator
-    import time
+
+    # Validation
+    if not args.file and not args.texts:
+        console.print("[red]Please provide texts or --file[/red]")
+        return
+
+    if args.file and args.texts:
+        console.print("[red]Use either positional texts OR --file, not both[/red]")
+        return
 
     embedder = EmbeddingGenerator(model_name=args.model)
-
     start = time.perf_counter()
 
+    # Load texts
     if args.file:
         try:
             with open(args.file, "r", encoding="utf-8") as f:
@@ -124,26 +132,28 @@ def run_embed(args):
         except FileNotFoundError:
             console.print(f"[red]File not found:[/red] {args.file}")
             return
+    else:
+        texts = args.texts
 
-        embeddings = embedder.embed_batch(texts)
-        elapsed = time.perf_counter() - start
+    embeddings = embedder.embed_batch(texts)
+    elapsed = time.perf_counter() - start
 
-        console.print("[green]Batch embeddings generated[/green]")
-        console.print(f"• Number of texts: {len(texts)}")
-        console.print(f"• Embedding shape: {embeddings.shape}")
-        console.print(f"⏱ Time taken: {elapsed:.3f}s")
-
-    elif args.text:
-        embedding = embedder.embed_single(args.text)
-        elapsed = time.perf_counter() - start
+    # 🔹 SINGLE INPUT UX
+    if len(texts) == 1:
+        embedding = embeddings[0]
 
         console.print("[green]Embedding generated successfully[/green]")
         console.print(f"• Dimensions: {embedding.shape[0]}")
         console.print(f"• First 10 values: {embedding[:10]}")
         console.print(f"⏱ Time taken: {elapsed:.3f}s")
 
+    # 🔹 MULTI INPUT UX
     else:
-        console.print("[red]Please provide text or --file[/red]")
+        console.print("[green]Batch embeddings generated[/green]")
+        console.print(f"• Number of texts: {len(texts)}")
+        console.print(f"• Embedding shape: {embeddings.shape}")
+        console.print(f"⏱ Time taken: {elapsed:.3f}s")
+
 
 def run_benchmark(args):
     from semantic_search.embeddings import EmbeddingGenerator
@@ -236,7 +246,12 @@ def main():
 
     # embed
     embed_parser = subparsers.add_parser("embed", help="Generate text embeddings")
-    embed_parser.add_argument("text", nargs="?")
+    embed_parser.add_argument(
+        "texts",
+        nargs="*",
+        type=str,
+        help="One or more texts to embed",
+    )
     embed_parser.add_argument("--file")
     embed_parser.add_argument("--model", default="BAAI/bge-small-en-v1.5")
     embed_parser.set_defaults(func=run_embed)

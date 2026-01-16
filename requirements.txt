@@ -2,3 +2,4 @@ fastembed
 numpy
 pytest
 rich>=13.7.0
+huggingface_hub

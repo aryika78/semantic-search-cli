@@ -21,8 +21,8 @@ def interpret_score(score: float) -> str:
 
 
 class TextComparator:
-    def __init__(self):
-        self.embedder = EmbeddingGenerator()
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5"):
+        self.embedder = EmbeddingGenerator(model_name)
 
     def compare(self, text1: str, text2: str) -> dict:
         """

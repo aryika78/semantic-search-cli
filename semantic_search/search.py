@@ -16,12 +16,12 @@ SIMILARITY_MAP = {
 }
 
 
-def semantic_search(
-    query: str,
+def semantic_search(query: str,
     documents: List[str],
     top_k: int = 5,
     metric: str = "cosine",
-) -> List[Tuple[str, float]]:
+    model_name: str = "BAAI/bge-small-en-v1.5",
+    threshold: float | None = None,) -> List[Tuple[str, float]]:
     """
     Perform semantic search over a list of documents.
     
@@ -40,7 +40,7 @@ def semantic_search(
         raise ValueError(f"Unsupported similarity metric: {metric}")
 
     # ✅ Use our wrapper class from Step 1
-    embedder = EmbeddingGenerator()
+    embedder = EmbeddingGenerator(model_name)
 
     # Embed the query
     query_vec = embedder.embed_single(query)
@@ -53,6 +53,11 @@ def semantic_search(
     for doc, vec in zip(documents, doc_vecs):
         score = SIMILARITY_MAP[metric](query_vec, vec)
         scores.append((doc, float(score)))
+
+    # Apply threshold (only for similarity metrics)
+    if threshold is not None and metric in ("cosine", "dot"):
+        scores = [(doc, score) for doc, score in scores if score >= threshold]
+
 
     # Sort by score descending for "cosine" and "dot", ascending for "euclidean"
     reverse = metric in ("cosine", "dot")

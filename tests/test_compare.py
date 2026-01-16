@@ -1,4 +1,5 @@
 from semantic_search.compare import TextComparator
+from semantic_search.compare import interpret_score
 
 
 def test_compare_output_structure():
@@ -24,3 +25,10 @@ def test_compare_similarity_reasonable():
     )
 
     assert result["cosine_similarity"] > 0.5
+
+def test_interpretation():
+    assert interpret_score(0.95) == "Very Similar"
+    assert interpret_score(0.8) == "Similar"
+    assert interpret_score(0.5) == "Somewhat Similar"
+    assert interpret_score(0.2) == "Not Similar"
+

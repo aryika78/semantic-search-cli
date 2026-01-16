@@ -1,6 +1,7 @@
 import argparse
 from rich.console import Console
 from rich.table import Table
+import numpy as np
 
 from semantic_search.search import semantic_search
 from semantic_search.compare import TextComparator
@@ -109,6 +110,35 @@ def run_embed(args):
         console.print(f"• First 10 values: {embedding[:10]}")
 
 
+def run_benchmark(args):
+    from semantic_search.embeddings import EmbeddingGenerator
+    import time
+
+    models = args.models.split(",")
+    text1, text2 = args.text1, args.text2
+
+    table = Table(title="📊 Model Benchmark Results")
+    table.add_column("Model", style="cyan")
+    table.add_column("Cosine", style="green")
+    table.add_column("Euclidean", style="green")
+    table.add_column("Dot", style="green")
+    table.add_column("Time (s)", style="magenta")
+
+    for model_name in models:
+        start = time.time()
+        embedder = EmbeddingGenerator(model_name=model_name)
+        vec1 = embedder.embed_single(text1)
+        vec2 = embedder.embed_single(text2)
+        elapsed = time.time() - start
+
+        cos = float(np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2)))
+        eucl = float(np.linalg.norm(vec1 - vec2))
+        dot = float(np.dot(vec1, vec2))
+
+        table.add_row(model_name, f"{cos:.4f}", f"{eucl:.4f}", f"{dot:.4f}", f"{elapsed:.2f}")
+
+    console.print(table)
+
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -150,6 +180,15 @@ def main():
     embed_parser.add_argument("text", nargs="?", help="Input text")
     embed_parser.add_argument("--file", type=str, help="File with one text per line")
     embed_parser.set_defaults(func=run_embed)
+
+    benchmark_parser = subparsers.add_parser("benchmark", help="Compare embedding models")
+    benchmark_parser.add_argument("text1", type=str)
+    benchmark_parser.add_argument("text2", type=str)
+    benchmark_parser.add_argument(
+    "--models", type=str, default="BAAI/bge-small-en-v1.5,BAAI/bge-base-en-v1.5",
+    help="Comma-separated list of models to benchmark"
+    )
+    benchmark_parser.set_defaults(func=run_benchmark)
 
 
     args = parser.parse_args()

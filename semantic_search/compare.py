@@ -6,6 +6,20 @@ from semantic_search.similarity import (
 )
 
 
+def interpret_score(score: float) -> str:
+    """
+    Convert cosine similarity score into human-readable meaning.
+    """
+    if score >= 0.9:
+        return "Very Similar"
+    elif score >= 0.7:
+        return "Similar"
+    elif score >= 0.5:
+        return "Somewhat Similar"
+    else:
+        return "Not Similar"
+
+
 class TextComparator:
     def __init__(self):
         self.embedder = EmbeddingGenerator()
@@ -24,8 +38,8 @@ class TextComparator:
         euclidean = euclidean_distance(vec1, vec2)
         dot = dot_product(vec1, vec2)
 
-        # Interpretation
-        interpretation = self._interpret_cosine(cosine)
+        # Interpretation (✅ correct usage)
+        interpretation = interpret_score(cosine)
 
         return {
             "cosine_similarity": float(cosine),
@@ -33,16 +47,3 @@ class TextComparator:
             "dot_product": float(dot),
             "interpretation": interpretation,
         }
-
-    def _interpret_cosine(self, score: float) -> str:
-        """
-        Convert cosine score into human meaning.
-        """
-        if score >= 0.85:
-            return "Very Similar"
-        elif score >= 0.65:
-            return "Similar"
-        elif score >= 0.45:
-            return "Somewhat Related"
-        else:
-            return "Not Related"

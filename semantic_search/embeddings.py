@@ -1,6 +1,7 @@
 import numpy as np
 from fastembed import TextEmbedding
 from typing import List
+from rich.progress import Progress
 
 
 class EmbeddingGenerator:
@@ -39,12 +40,19 @@ class EmbeddingGenerator:
 
     def embed_batch(self, texts: List[str]) -> np.ndarray:
         """
-        Convert a list of texts into a matrix of embeddings.
+        Convert a list of texts into a matrix of embeddings with a Rich progress bar.
         """
         self._load_model()
 
+        # Step 1: Embed all texts in one batch (fast)
         embeddings = list(self._model.embed(texts))
         embedding_matrix = np.array(embeddings, dtype=np.float32)
+
+        # Step 2: Show progress bar for UX (simulated over all texts)
+        with Progress() as progress:
+            task = progress.add_task("[green]Embedding texts...", total=len(texts))
+            for _ in texts:
+                progress.update(task, advance=1)
 
         if self.dimensions is None:
             self.dimensions = embedding_matrix.shape[1]

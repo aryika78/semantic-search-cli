@@ -1,19 +1,21 @@
-# Virtual environment
+# Virtual env
 venv/
 
 # Python cache
 __pycache__/
 *.pyc
-
-# Pytest cache
 .pytest_cache/
 
-# Docker / ML cache
+# FastEmbed / HF model cache
 fastembed_cache/
 
-# Generated vector index
+# Generated index
 *.npz
 
-# OS files
+# Docker
+*.log
+.env
+
+# OS
 .DS_Store
 Thumbs.db

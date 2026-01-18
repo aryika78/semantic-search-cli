@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: semantic-search-cli
+    volumes:
+      - ./fastembed_cache:/root/.cache/fastembed
+      - ./fastembed_cache:/root/.cache/huggingface
+      - ./data:/app/data
+    entrypoint: ["python", "-m", "cli.main"]

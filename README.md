@@ -243,10 +243,42 @@ mkdir fastembed_cache
 
 ---
 
-### ▶️ Embed
+## 🐳 Docker Compose (Recommended)
+
+Docker Compose lets you run the CLI without typing long Docker commands. It automatically handles image build, volume mounts, and execution.
+
+### 📄 docker-compose.yml
+
+Create this file in project root:
+
+```yaml
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: semantic-search-cli
+    volumes:
+      - ./fastembed_cache:/root/.cache/fastembed
+      - ./fastembed_cache:/root/.cache/huggingface
+      - ./data:/app/data
+    entrypoint: ["python", "-m", "cli.main"]
+```
+
+---
+
+### ▶️ Build using Compose
 
 ```bash
-docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/fastembed_cache:/root/.cache/huggingface semantic-search-cli embed "Machine learning is powerful"
+docker compose build
+```
+
+---
+
+### 🧮 Embed
+
+```bash
+docker compose run --rm app embed "Machine learning is powerful"
 ```
 
 ---
@@ -254,7 +286,7 @@ docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/faste
 ### 🔍 Compare
 
 ```bash
-docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/fastembed_cache:/root/.cache/huggingface semantic-search-cli compare "I love Python" "I enjoy programming"
+docker compose run --rm app compare "I love Python" "I enjoy programming"
 ```
 
 ---
@@ -262,7 +294,7 @@ docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/faste
 ### 📚 Semantic Search
 
 ```bash
-docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/fastembed_cache:/root/.cache/huggingface -v ${PWD}/data:/app/data semantic-search-cli search "machine learning models" data/corpus.txt
+docker compose run --rm app search "machine learning models" data/corpus.txt
 ```
 
 ---
@@ -270,7 +302,7 @@ docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/faste
 ### 📦 Index Build
 
 ```bash
-docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/fastembed_cache:/root/.cache/huggingface -v ${PWD}/data:/app/data semantic-search-cli index build data/corpus.txt --output data/index.npz
+docker compose run --rm app index build data/corpus.txt --output data/index.npz
 ```
 
 ---
@@ -278,7 +310,7 @@ docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/faste
 ### 🔎 Index Search
 
 ```bash
-docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/fastembed_cache:/root/.cache/huggingface -v ${PWD}/data:/app/data semantic-search-cli index search "machine learning models" --index data/index.npz
+docker compose run --rm app index search "machine learning models" --index data/index.npz
 ```
 
 ---
@@ -286,7 +318,7 @@ docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/faste
 ### ⚡ Benchmark
 
 ```bash
-docker run --rm -v ${PWD}/fastembed_cache:/root/.cache/fastembed -v ${PWD}/fastembed_cache:/root/.cache/huggingface semantic-search-cli benchmark "I love Python" "I enjoy programming"
+docker compose run --rm app benchmark "I love Python" "I enjoy programming"
 ```
 
 ---

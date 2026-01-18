@@ -47,6 +47,10 @@ semantic-search/
 ├── data/
 │   └── corpus.txt         # Sample corpus
 │
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── .gitignore
 ├── requirements.txt
 └── README.md
 ```

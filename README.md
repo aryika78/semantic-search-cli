@@ -59,6 +59,14 @@ semantic-search/
 
 ## ⚙️ Installation & Setup
 
+
+### 🔽 Clone Repository
+
+```bash
+git clone https://github.com/aryika78/semantic-search-cli.git
+cd semantic-search-cli
+```
+
 ### 1️⃣ Create Virtual Environment
 
 ```bash
@@ -324,6 +332,19 @@ docker compose run --rm app index search "machine learning models" --index data/
 ```bash
 docker compose run --rm app benchmark "I love Python" "I enjoy programming"
 ```
+
+---
+
+## 📌 Tech Stack
+
+* Python 3.10+
+* FastEmbed (Embedding engine)
+* NumPy (Vector similarity)
+* Rich (Terminal UI)
+* Pytest (Testing)
+* HuggingFace Hub (Model hosting)
+* Docker
+* Docker Compose
 
 ---
 
